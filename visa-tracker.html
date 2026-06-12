@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Visa Tracker — Gotion High-Tech</title>
+<style>
+  :root {
+    --orange:        #F47920;
+    --orange-light:  #FFF1E6;
+    --orange-dark:   #D46215;
+    --orange-glow:   rgba(244,121,32,0.15);
+    --bg:            #F5F5F7;
+    --card-bg:       #FFFFFF;
+    --text-primary:  #1D1D1F;
+    --text-secondary:#6E6E73;
+    --text-tertiary: #86868B;
+    --separator:     #D2D2D7;
+    --green:         #34C759;
+    --red:           #FF3B30;
+    --blue:          #007AFF;
+    --radius-sm:     10px;
+    --radius:        18px;
+    --radius-lg:     24px;
+    --shadow-sm:     0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow:        0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg:     0 20px 60px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.04);
+    --transition:    0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ── Login Overlay ── */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: #F5F5F7;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+  .login-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.04);
+    padding: 48px 40px 40px;
+    width: 380px;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .login-logo {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--orange);
+    margin-bottom: 4px;
+  }
+  .login-logo-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 1.5px;
+    margin-bottom: 28px;
+  }
+  .login-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 20px;
+    border-radius: 12px;
+    background: var(--orange-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .login-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+  }
+  .login-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+  .login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #D2D2D7;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: inherit;
+    text-align: center;
+    letter-spacing: 2px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-text-security: disc;
+  }
+  .login-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px var(--orange-glow);
+  }
+  .login-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: var(--orange);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .login-btn:hover {
+    background: var(--orange-dark);
+    box-shadow: 0 4px 12px var(--orange-glow);
+  }
+  .login-error {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 10px;
+    min-height: 20px;
+    transition: opacity 0.2s;
+  }
+  .main-content { transition: opacity 0.4s ease; }
+  .main-content.blur { filter: blur(0px); }
+
+  /* ── Header ── */
+  .header {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 0.5px solid rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 32px;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .gotion-logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .gotion-mark {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--orange);
+  }
+  .gotion-sub {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 1.5px;
+  }
+  .header-divider {
+    color: var(--separator);
+    font-weight: 300;
+    margin: 0 6px;
+    font-size: 16px;
+  }
+  .header-app {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 15px;
+  }
+  .header-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+
+  /* ── Hero Section ── */
+  .hero {
+    margin-bottom: 48px;
+  }
+  .hero-label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+  .hero-title {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -1.2px;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* ── Search ── */
+  .search-wrap {
+    margin-bottom: 32px;
+    max-width: 420px;
+  }
+  .search-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    z-index: 1;
+    line-height: 1;
+  }
+  .search-input {
+    width: 100%;
+    padding: 11px 40px 11px 40px;
+    border: none;
+    border-radius: 12px;
+    background: var(--card-bg);
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    outline: none;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+  .search-input:focus {
+    box-shadow: 0 0 0 3px var(--orange-glow), var(--shadow);
+  }
+  .search-input::placeholder {
+    color: var(--text-tertiary);
+  }
+  .search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: #C7C7CC;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 1;
+  }
+  .search-clear.visible { display: flex; }
+  .search-count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 6px;
+    margin-left: 4px;
+  }
+
+  /* ── Departure Dates ── */
+  .calendar-section {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 24px 28px 28px;
+    margin-bottom: 28px;
+  }
+  .calendar-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  .departure-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .dep-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    overflow: hidden;
+    width: 140px;
+    flex-shrink: 0;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .dep-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .dep-card-top {
+    background: var(--orange);
+    color: #fff;
+    text-align: center;
+    padding: 8px 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .dep-card-body {
+    text-align: center;
+    padding: 16px 8px 12px;
+  }
+  .dep-card-day {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+  .dep-card-wd {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    margin-bottom: 10px;
+  }
+  .dep-card-names {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 0.5px solid var(--separator);
+    padding-top: 10px;
+  }
+  .dep-card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange-dark);
+    line-height: 1.2;
+  }
+  @media (max-width: 700px) {
+    .departure-cards { gap: 10px; }
+    .dep-card { width: 120px; }
+    .dep-card-day { font-size: 36px; }
+    .dep-card-name { font-size: 11px; }
+  }
+
+  /* ── Overview Chart ── */
+  .overview-section {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 28px 32px;
+    margin-bottom: 32px;
+  }
+  .overview-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+  }
+  .overview-chart { display: flex; flex-direction: column; gap: 14px; }
+  .overview-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .overview-name {
+    width: 130px;
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+    line-height: 1.2;
+  }
+  .overview-name-zh {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    letter-spacing: 0.2px;
+  }
+  .overview-bar-wrap {
+    flex: 1;
+    height: 28px;
+    position: relative;
+  }
+  .overview-bar-track {
+    height: 100%;
+    background: #F0F0F2;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .overview-bar-fill {
+    height: 100%;
+    border-radius: 14px;
+    transition: width 1s cubic-bezier(0.25,0.1,0.25,1);
+    position: relative;
+  }
+  .overview-bar-fill.green  { background: var(--green); }
+  .overview-bar-fill.orange { background: var(--orange); }
+  .overview-bar-fill.red    { background: var(--red); }
+  .overview-bar-label {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .overview-num {
+    width: 70px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  @media (max-width: 640px) {
+    .overview-name { width: 90px; font-size: 12px; }
+    .overview-num { width: 55px; font-size: 11px; }
+  }
+
+  /* ── Member Card ── */
+  .member-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform var(--transition), box-shadow var(--transition);
+    border: 0.5px solid rgba(0,0,0,0.04);
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Card header */
+  .card-top {
+    padding: 28px 32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .card-name {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    line-height: 1.15;
+  }
+  .card-name-zh {
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    letter-spacing: 0.2px;
+    margin-top: 1px;
+  }
+  .card-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge-de { background: #FFEAA7; color: #B8860B; }
+  .badge-sk { background: #D6EAF8; color: #1A5276; }
+  .badge-multi { background: #D5F5E3; color: #1E8449; }
+  .badge-single { background: #FDEBD0; color: #B9770E; }
+  .badge-schengen { background: #D6EAF8; color: #21618C; }
+
+  /* ── Countdown ring ── */
+  .card-visa-section {
+    padding: 24px 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ring-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    flex-shrink: 0;
+  }
+  .ring-svg {
+    transform: rotate(-90deg);
+    width: 160px;
+    height: 160px;
+  }
+  .ring-bg {
+    fill: none;
+    stroke: #F0F0F2;
+    stroke-width: 10;
+  }
+  .ring-fg {
+    fill: none;
+    stroke: var(--orange);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(0.25,0.1,0.25,1);
+  }
+  .ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-days {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+  .ring-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  /* Info grid */
+  .visa-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+    flex: 1;
+    min-width: 240px;
+  }
+  .visa-info-item {}
+  .visa-info-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+  .visa-info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .visa-info-value.small {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  /* ── Progress bar section ── */
+  .card-bar-section {
+    padding: 0 32px 8px;
+  }
+  .bar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .bar-header-left  { color: var(--text-secondary); }
+  .bar-header-right { color: var(--text-primary); }
+  .bar-track {
+    height: 6px;
+    background: #F0F0F2;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.25,0.1,0.25,1);
+  }
+  .bar-fill.orange { background: var(--orange); }
+  .bar-fill.green  { background: var(--green); }
+
+  /* ── Trip log ── */
+  .card-trips {
+    padding: 20px 32px;
+    border-top: 0.5px solid var(--separator);
+    margin-top: 4px;
+  }
+  .trips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .trips-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .btn {
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition);
+  }
+  .btn-ghost {
+    background: none;
+    color: var(--orange);
+  }
+  .btn-ghost:hover {
+    background: var(--orange-light);
+  }
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--orange-dark);
+    box-shadow: 0 4px 12px var(--orange-glow);
+  }
+  .btn-small {
+    padding: 4px 10px;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  .trip-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .trip-table th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--separator);
+  }
+  .trip-table td {
+    font-size: 14px;
+    padding: 10px 12px;
+    border-bottom: 0.5px solid #F0F0F2;
+    font-weight: 500;
+  }
+  .trip-empty {
+    text-align: center;
+    color: var(--text-tertiary);
+    padding: 24px;
+    font-size: 14px;
+  }
+  .trip-ongoing td { background: #FFF8F2; }
+  .ongoing-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--orange);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ── Card footer ── */
+  .card-footer {
+    padding: 16px 32px;
+    border-top: 0.5px solid var(--separator);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-passport {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .footer-passport span {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* ── Add Member Card ── */
+  .card-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 360px;
+    border: 2px dashed #D2D2D7;
+    background: transparent;
+    box-shadow: none;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .card-add:hover {
+    border-color: var(--orange);
+    background: rgba(244,121,32,0.02);
+    transform: none;
+    box-shadow: none;
+  }
+  .card-add-inner {
+    text-align: center;
+    color: var(--text-tertiary);
+  }
+  .card-add-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: #F0F0F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 22px;
+    color: var(--text-secondary);
+    transition: all var(--transition);
+  }
+  .card-add:hover .card-add-icon {
+    background: var(--orange-light);
+    color: var(--orange);
+  }
+  .card-add-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.2);
+    padding: 32px;
+    width: 420px;
+    max-width: 90vw;
+    animation: modalIn 0.3s cubic-bezier(0.25,0.1,0.25,1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: -0.3px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #D2D2D7;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color var(--transition);
+    outline: none;
+  }
+  .form-group input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px var(--orange-glow);
+  }
+  .form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .form-row .form-group { flex: 1; }
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .hero-title { font-size: 32px; }
+    .member-grid { grid-template-columns: 1fr; }
+    .card-visa-section { flex-direction: column; align-items: center; text-align: center; }
+    .visa-info-grid { grid-template-columns: 1fr 1fr; }
+    .summary-bar { flex-direction: column; }
+    .header { padding: 0 16px; }
+    .main { padding: 24px 16px 60px; }
+    .card-top, .card-visa-section, .card-bar-section, .card-trips, .card-footer {
+      padding-left: 20px; padding-right: 20px;
+    }
+  }
+
+  /* ── SVG wave decoration ── */
+  .wave-divider {
+    width: 100%;
+    height: 40px;
+    margin: -8px 0 40px;
+    opacity: 0.3;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ── Login Overlay ── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">GOTION</div>
+    <div class="login-logo-sub">国轩高科</div>
+    <div class="login-icon">🔒</div>
+    <div class="login-title">Team Visa Tracker</div>
+    <div class="login-desc">Enter password to continue</div>
+    <input type="password" class="login-input" id="loginInput" placeholder="Password" autofocus onkeydown="if(event.key==='Enter')verifyLogin()">
+    <button class="login-btn" onclick="verifyLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ── Main Content ── -->
+<div class="main-content" id="mainContent">
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="gotion-logo">
+        <span class="gotion-mark">GOTION</span>
+        <span class="gotion-sub">国轩高科</span>
+      </div>
+      <span class="header-divider">|</span>
+      <span class="header-app">Visa Tracker</span>
+    </div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-label">Business Visa · Schengen Area</div>
+    <h1 class="hero-title">EU Stay Tracker</h1>
+    <p class="hero-sub">Monitor visa validity and remaining stay allowance for your team.</p>
+  </section>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-row">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name…" oninput="doSearch()">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+    <div class="search-count" id="searchCount"></div>
+  </div>
+
+  <!-- Departure Dates -->
+  <section class="calendar-section" id="calendarSection">
+    <h3 class="calendar-title">Departure Dates</h3>
+    <div class="departure-cards" id="departureCards"></div>
+  </section>
+
+  <!-- Overview Chart -->
+  <section class="overview-section" id="overviewSection">
+    <h3 class="overview-title">Stay Allowance Remaining</h3>
+    <div class="overview-chart" id="overviewChart">
+      <!-- Injected by JS -->
+    </div>
+  </section>
+
+  <!-- Member Cards -->
+  <section class="member-grid" id="memberGrid">
+    <!-- Cards injected by JS -->
+  </section>
+
+</main>
+
+<!-- ── Add Trip Modal ── -->
+<div class="modal-overlay" id="tripModal">
+  <div class="modal">
+    <h3>Log EU Trip</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Entry Date</label>
+        <input type="date" id="tripEntry">
+      </div>
+      <div class="form-group">
+        <label>Exit Date</label>
+        <input type="date" id="tripExit">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Purpose / Notes</label>
+      <input type="text" id="tripNotes" placeholder="e.g. Client meeting, Hannover Messe">
+    </div>
+    <input type="hidden" id="tripMemberId">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addTrip()">Add Trip</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const TEAM = [
+  {
+    id: 'zhang-junda',
+    nameZH: '张骏达',
+    nameEN: 'Junda Zhang',
+    passport: 'EB1442104',
+    visaEffective: '2026-04-20',
+    visaExpiry: '2026-07-26',
+    stayDays: 83,
+    entries: 'Multiple',
+    issuingCountry: 'DE',
+    issuingCountryName: 'Germany',
+    passportExpiry: null,
+    trips: [
+      { entry: '2026-04-24', exit: '2026-05-06', days: 13, notes: 'Spain' },
+      { entry: '2026-05-14', exit: null,        days: 0,  notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'li-jiajun',
+    nameZH: '李家俊',
+    nameEN: 'Jiajun Li',
+    passport: 'EQ5572750',
+    visaEffective: '2026-04-20',
+    visaExpiry: '2027-04-19',
+    stayDays: 90,
+    entries: 'Multiple',
+    issuingCountry: 'DE',
+    issuingCountryName: 'Germany',
+    passportExpiry: '2035-09-17',
+    trips: [
+      { entry: '2026-04-25', exit: '2026-05-02', days: 8, notes: 'Client meetings' },
+      { entry: '2026-05-14', exit: null,       days: 0, notes: 'Project follow-up' }
+    ]
+  },
+  {
+    id: 'xue-shaomin',
+    nameZH: '薛绍敏',
+    nameEN: 'Shaomin Xue',
+    passport: 'EK7798367',
+    visaEffective: '2026-06-03',
+    visaExpiry: '2026-09-06',
+    stayDays: 81,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2033-09-12',
+    trips: [
+      { entry: '2026-06-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'tao-yuxiang',
+    nameZH: '陶宇翔',
+    nameEN: 'Yuxiang Tao',
+    passport: 'EN8980411',
+    visaEffective: '2026-06-03',
+    visaExpiry: '2026-09-06',
+    stayDays: 81,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2034-12-29',
+    trips: [
+      { entry: '2026-06-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'xie-gang',
+    nameZH: '谢刚',
+    nameEN: 'Gang Xie',
+    passport: 'EP4537486',
+    visaEffective: '2026-04-20',
+    visaExpiry: '2026-07-26',
+    stayDays: 83,
+    entries: 'Multiple',
+    issuingCountry: 'DE',
+    issuingCountryName: 'Germany',
+    passportExpiry: '2035-03-20',
+    trips: [
+      { entry: '2026-05-14', exit: null, days: 0, notes: 'Project work' }
+    ]
+  },
+  {
+    id: 'dai-yanhua',
+    nameZH: '戴燕华',
+    nameEN: 'Yanhua Dai',
+    passport: 'ER7656376',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2036-05-07',
+    trips: [
+      { entry: '2026-06-16', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'li-xiangyu',
+    nameZH: '李翔宇',
+    nameEN: 'Xiangyu Li',
+    passport: 'ER7656624',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2036-05-07',
+    trips: [
+      { entry: '2026-06-16', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'wu-ming',
+    nameZH: '武明',
+    nameEN: 'Ming Wu',
+    passport: 'EK7795014',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2033-09-07',
+    trips: [
+      { entry: '2026-06-16', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'tong-weiwei',
+    nameZH: '童维维',
+    nameEN: 'Weiwei Tong',
+    passport: 'ER7657693',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2036-05-07',
+    trips: [
+      { entry: '2026-06-16', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'sun-qian',
+    nameZH: '孙乾',
+    nameEN: 'Qian Sun',
+    passport: 'ER7635005',
+    visaEffective: '2026-06-03',
+    visaExpiry: '2026-08-22',
+    stayDays: 81,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2036-04-21',
+    trips: [
+      { entry: '2026-06-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'yin-botao',
+    nameZH: '尹波涛',
+    nameEN: 'Botao Yin',
+    passport: 'ER0943671',
+    visaEffective: '2026-06-03',
+    visaExpiry: '2026-09-06',
+    stayDays: 81,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2035-12-16',
+    trips: [
+      { entry: '2026-06-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'chen-tao',
+    nameZH: '陈涛',
+    nameEN: 'Tao Chen',
+    passport: 'EL2169486',
+    visaEffective: '2026-06-03',
+    visaExpiry: '2026-09-06',
+    stayDays: 81,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2033-11-22',
+    trips: [
+      { entry: '2026-06-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'zhang-siyu',
+    nameZH: '张嗣瑜',
+    nameEN: 'Siyu Zhang',
+    passport: 'EJ3626380',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2032-12-19',
+    trips: [
+      { entry: '2026-06-15', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'zhang-yuqian',
+    nameZH: '张羽茜',
+    nameEN: 'Yuqian Zhang',
+    passport: 'EN8950592',
+    visaEffective: '2026-04-20',
+    visaExpiry: '2026-07-26',
+    stayDays: 83,
+    entries: 'Multiple',
+    issuingCountry: 'DE',
+    issuingCountryName: 'Germany',
+    passportExpiry: null,
+    trips: [
+      { entry: '2026-05-14', exit: null, days: 0, notes: 'Spain' }
+    ]
+  },
+  {
+    id: 'tai-dezhi',
+    nameZH: '台德志',
+    nameEN: 'Dezhi Tai',
+    passport: 'EL9983977',
+    visaEffective: '2026-06-10',
+    visaExpiry: '2026-08-25',
+    stayDays: 62,
+    entries: 'Single',
+    issuingCountry: 'SK',
+    issuingCountryName: 'Slovakia',
+    passportExpiry: '2034-03-27',
+    trips: []
+  }
+];
+
+// ── Helpers ──
+function parseDate(s) { return new Date(s + 'T00:00:00'); }
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = parseDate(s);
+  return d.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+function daysBetween(a, b) {
+  return Math.round((parseDate(b) - parseDate(a)) / 86400000);
+}
+function today() { return new Date().toISOString().slice(0,10); }
+function maskPassport(p) {
+  return '**' + p.slice(2, -1) + '*';
+}
+
+// ── Format header date ──
+document.getElementById('headerDate').textContent =
+  new Date().toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'long', day:'numeric' });
+
+// ── Search ──
+let searchQuery = '';
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  searchQuery = q;
+  document.getElementById('searchClear').classList.toggle('visible', q.length > 0);
+  renderAll();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  searchQuery = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  renderAll();
+}
+
+function filterTeam() {
+  const list = searchQuery
+    ? TEAM.filter(m =>
+        m.nameEN.toLowerCase().includes(searchQuery) ||
+        m.nameZH.includes(searchQuery)
+      )
+    : TEAM;
+  // Sort by effective remaining days (least → most urgent first)
+  return list.slice().sort((a, b) => {
+    const sa = getMemberStats(a).stayRemaining;
+    const sb = getMemberStats(b).stayRemaining;
+    return sa - sb;
+  });
+}
+
+// ── Render ──
+function renderAll() {
+  renderCalendars();
+  renderOverview();
+  renderCards();
+}
+
+function renderCalendars() {
+  const cards = document.getElementById('departureCards');
+  if (!cards) return;
+
+  const filtered = filterTeam();
+  // Build map: "YYYY-MM-DD" → [ nameEN, ... ]
+  const depMap = {};
+  filtered.forEach(m => {
+    const s = getMemberStats(m);
+    const d = s.latestDeparture;
+    if (!depMap[d]) depMap[d] = [];
+    depMap[d].push(m.nameEN);
+  });
+
+  // Sort dates ascending, pick only dates that have departures
+  const dates = Object.keys(depMap).sort();
+  if (!dates.length) { cards.innerHTML = '<span style="color:var(--text-tertiary)">No departure dates</span>'; return; }
+
+  const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  cards.innerHTML = dates.map(d => {
+    const dt = parseDate(d);
+    const month = MONTHS[dt.getMonth()];
+    const day = dt.getDate();
+    const wd = WD[dt.getDay()];
+    const names = depMap[d];
+
+    return `
+    <div class="dep-card">
+      <div class="dep-card-top">${month}</div>
+      <div class="dep-card-body">
+        <div class="dep-card-day">${day}</div>
+        <div class="dep-card-wd">${wd}</div>
+        <div class="dep-card-names">${names.map(n => `<span class="dep-card-name">${n}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOverview() {
+  const container = document.getElementById('overviewChart');
+  if (!container) return;
+  const filtered = filterTeam();
+  document.getElementById('searchCount').textContent =
+    searchQuery ? `Showing ${filtered.length} of ${TEAM.length} members` : '';
+  // Max stayDays for proportional bar widths
+  const maxStay = Math.max(...TEAM.map(m => m.stayDays));
+  let html = '';
+  filtered.forEach(m => {
+    const s = getMemberStats(m);
+    const pct = s.pctStayUsed;
+    const cls = s.stayRemaining < 15 ? 'red' : s.stayRemaining < 45 ? 'orange' : 'green';
+    const scalePct = (m.stayDays / maxStay) * 100;
+    html += `
+    <div class="overview-row">
+      <div class="overview-name">${m.nameEN}<span class="overview-name-zh">${m.nameZH}</span></div>
+      <div class="overview-bar-wrap">
+        <div class="overview-bar-track" style="width:${scalePct}%">
+          <div class="overview-bar-fill ${cls}" style="width:${100 - pct}%">
+            <span class="overview-bar-label">${s.stayRemaining} days left</span>
+          </div>
+        </div>
+      </div>
+      <div class="overview-num">${s.stayConsumed}/${m.stayDays}d</div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function getMemberStats(m) {
+  const now = today();
+  const effective = m.visaEffective;
+  const expiry = m.visaExpiry;
+  const totalValidity = daysBetween(effective, expiry);
+  const daysUntilExpiry = Math.max(0, daysBetween(now, expiry));
+  // Stay consumption = actual days in EU (from trips, ongoing trips calc to today)
+  const tripDays = m.trips.reduce((sum, t) => {
+    const days = t.exit ? t.days : (daysBetween(t.entry, now) + 1);
+    return sum + Math.max(0, days);
+  }, 0);
+  const stayConsumed = Math.min(m.stayDays, tripDays);
+  const stayAllowanceLeft = Math.max(0, m.stayDays - stayConsumed);
+  // Effective remaining = capped by visa expiry date
+  const effectiveRemaining = Math.min(stayAllowanceLeft, daysUntilExpiry);
+  const pctStayUsed = m.stayDays > 0 ? Math.min(100, (stayConsumed / m.stayDays) * 100) : 0;
+  // Latest safe departure = today + effective remaining days
+  const latestDeparture = new Date(parseDate(now).getTime() + effectiveRemaining * 86400000)
+    .toISOString().slice(0, 10);
+  return { now, effective, expiry, totalValidity, daysUntilExpiry,
+           stayConsumed, stayRemaining: effectiveRemaining, pctStayUsed, tripDays,
+           latestDeparture };
+}
+
+function renderCards() {
+  const grid = document.getElementById('memberGrid');
+  let html = '';
+  const filtered = filterTeam();
+
+  filtered.forEach(m => {
+    const s = getMemberStats(m);
+    const ringR = 66;
+    const ringC = 2 * Math.PI * ringR;
+    const stayConsumedPct = s.pctStayUsed;
+    const ringOffset = ringC * (1 - stayConsumedPct / 100);
+
+    // Urgency based on REMAINING STAY DAYS (not calendar)
+    const urgency = s.stayRemaining < 15 ? 'var(--red)' :
+                    s.stayRemaining < 45 ? 'var(--orange)' : 'var(--green)';
+    const ringFgColor = urgency;
+
+    html += `
+    <div class="card">
+      <!-- Top -->
+      <div class="card-top">
+        <div>
+          <div class="card-name">${m.nameEN}</div>
+          <div class="card-name-zh">${m.nameZH}</div>
+        </div>
+        <div class="card-badges">
+          <span class="badge badge-${m.issuingCountry.toLowerCase()}">${m.issuingCountry === 'DE' ? '🇩🇪' : m.issuingCountry === 'SK' ? '🇸🇰' : ''} ${m.issuingCountry}</span>
+          <span class="badge badge-${m.entries.toLowerCase()}">${m.entries === 'Multiple' ? '↻' : '→'} ${m.entries}</span>
+          <span class="badge badge-schengen">Schengen</span>
+        </div>
+      </div>
+
+      <!-- Ring + Info -->
+      <div class="card-visa-section">
+        <div class="ring-container">
+          <svg class="ring-svg" viewBox="0 0 160 160">
+            <circle class="ring-bg" cx="80" cy="80" r="${ringR}"/>
+            <circle class="ring-fg" cx="80" cy="80" r="${ringR}"
+              stroke="${ringFgColor}"
+              stroke-dasharray="${ringC}"
+              stroke-dashoffset="${ringOffset}"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-days" style="color:${ringFgColor}">${s.stayRemaining}</div>
+            <div class="ring-label">stay days<br>remaining</div>
+          </div>
+        </div>
+
+        <div class="visa-info-grid">
+          <div class="visa-info-item">
+            <div class="visa-info-label">Visa Effective</div>
+            <div class="visa-info-value">${fmtDate(m.visaEffective)}</div>
+          </div>
+          <div class="visa-info-item">
+            <div class="visa-info-label">Visa Expiry</div>
+            <div class="visa-info-value" style="color:${urgency}; font-size:20px; font-weight:700;">${fmtDate(m.visaExpiry)}</div>
+          </div>
+          <div class="visa-info-item">
+            <div class="visa-info-label">Calendar Days to Expiry</div>
+            <div class="visa-info-value" style="color:${urgency};">${s.daysUntilExpiry} days</div>
+          </div>
+          <div class="visa-info-item" style="grid-column:1/-1; background:var(--orange-light); padding:10px 14px; border-radius:12px;">
+            <div class="visa-info-label" style="color:var(--orange-dark);">Latest Safe Departure</div>
+            <div class="visa-info-value" style="color:var(--orange-dark); font-size:20px; font-weight:700;">${fmtDate(s.latestDeparture)}</div>
+          </div>
+          <div class="visa-info-item">
+            <div class="visa-info-label">Issuing Country</div>
+            <div class="visa-info-value small">${m.issuingCountryName} (${m.issuingCountry})</div>
+          </div>
+          <div class="visa-info-item">
+            <div class="visa-info-label">Passport №</div>
+            <div class="visa-info-value small">${maskPassport(m.passport)}</div>
+          </div>
+          <div class="visa-info-item">
+            <div class="visa-info-label">Passport Expiry</div>
+            <div class="visa-info-value small">${fmtDate(m.passportExpiry)}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bars -->
+      <div class="card-bar-section">
+        <div class="bar-header">
+          <span class="bar-header-left">Visa stay consumed</span>
+          <span class="bar-header-right">${s.stayConsumed} / ${m.stayDays} days · ${Math.round(s.pctStayUsed)}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill ${s.pctStayUsed > 70 ? 'orange' : 'green'}" style="width:${s.pctStayUsed}%"></div>
+        </div>
+      </div>
+
+      <!-- Trips -->
+      <div class="card-trips">
+        <div class="trips-header">
+          <span class="trips-title">EU Trips · ${m.trips.length} logged</span>
+          <button class="btn btn-ghost btn-small" onclick="openTripModal('${m.id}')">+ Log Trip</button>
+        </div>
+        ${m.trips.length === 0 ? '<div class="trip-empty">No trips recorded yet</div>' : `
+        <table class="trip-table">
+          <thead><tr><th>Entry</th><th>Exit</th><th>Days</th><th>Notes</th><th></th></tr></thead>
+          <tbody>
+            ${m.trips.map((t, i) => {
+              const isOngoing = t.exit === null;
+              const liveDays = isOngoing ? (daysBetween(t.entry, today()) + 1) : t.days;
+              return `
+              <tr${isOngoing ? ' class="trip-ongoing"' : ''}>
+                <td>${fmtDate(t.entry)}</td>
+                <td>${isOngoing ? '<span class="ongoing-badge">至今</span>' : fmtDate(t.exit)}</td>
+                <td>${liveDays}</td>
+                <td>${t.notes || '—'}</td>
+                <td><button class="btn btn-ghost btn-small" onclick="deleteTrip('${m.id}',${i})" style="color:var(--red)">Delete</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`}
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="footer-passport">
+          Passport <span>${maskPassport(m.passport)}</span> · Expires <span>${fmtDate(m.passportExpiry)}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Add card (hidden during search)
+  if (!searchQuery) {
+    html += `
+    <div class="card card-add" onclick="alert('Add member feature ready for your next team member.')">
+      <div class="card-add-inner">
+        <div class="card-add-icon">+</div>
+        <div class="card-add-text">Add Team Member</div>
+      </div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // Animate rings
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.ring-fg').forEach(el => {
+      el.style.transition = 'none';
+      const offset = el.getAttribute('stroke-dashoffset');
+      el.style.strokeDashoffset = el.getAttribute('stroke-dasharray');
+      requestAnimationFrame(() => {
+        el.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.25,0.1,0.25,1)';
+        el.style.strokeDashoffset = offset;
+      });
+    });
+  });
+}
+
+// ── Trip Modal ──
+function openTripModal(memberId) {
+  document.getElementById('tripMemberId').value = memberId;
+  document.getElementById('tripEntry').value = '';
+  document.getElementById('tripExit').value = '';
+  document.getElementById('tripNotes').value = '';
+  document.getElementById('tripModal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('tripModal').classList.remove('active');
+}
+function addTrip() {
+  const memberId = document.getElementById('tripMemberId').value;
+  const entry = document.getElementById('tripEntry').value;
+  const exit = document.getElementById('tripExit').value;
+  const notes = document.getElementById('tripNotes').value.trim();
+
+  if (!entry || !exit) { alert('Please fill both entry and exit dates.'); return; }
+  if (exit < entry) { alert('Exit date must be after entry date.'); return; }
+
+  const member = TEAM.find(m => m.id === memberId);
+  if (!member) return;
+
+  const tripDays = daysBetween(entry, exit) + 1;
+  member.trips.push({ entry, exit, days: tripDays, notes });
+  closeModal();
+  renderAll();
+}
+function deleteTrip(memberId, tripIndex) {
+  const member = TEAM.find(m => m.id === memberId);
+  if (!member) return;
+  member.trips.splice(tripIndex, 1);
+  renderAll();
+}
+
+// Close modal on overlay click
+document.getElementById('tripModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init
+renderAll();
+
+// ── Login ──
+const PASSWORD_HASH = '';
+
+async function sha256(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyLogin() {
+  const input = document.getElementById('loginInput').value;
+  const hash = await sha256(input);
+  const correct = 'f42c3c51247a982ba8d351e9ad9536ccbfa391feb0478daee1acb310052e7cc2';
+  if (hash === correct) {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    sessionStorage.setItem('visa_auth', '1');
+  } else {
+    document.getElementById('loginError').textContent = 'Incorrect password';
+    document.getElementById('loginInput').value = '';
+    document.getElementById('loginInput').focus();
+  }
+}
+
+// Check if already authenticated this session
+if (sessionStorage.getItem('visa_auth') === '1') {
+  document.getElementById('loginOverlay').classList.add('hidden');
+}
+</script>
+
+</div><!-- .main-content -->
+</body>
+</html>
